@@ -7,6 +7,12 @@ export const LoginPage: React.FC = () => {
   const { bootstrapped, login, checkBootstrapStatus } = useAuth();
   const [mode, setMode] = useState<"login" | "register" | "bootstrap">(bootstrapped ? "login" : "bootstrap");
   const [loading, setLoading] = useState(false);
+
+  React.useEffect(() => {
+    if (!bootstrapped) {
+      setMode("bootstrap");
+    }
+  }, [bootstrapped]);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
@@ -121,51 +127,70 @@ export const LoginPage: React.FC = () => {
           </div>
         )}
 
-        {/* Tab switch for Login / Register */}
-        {bootstrapped && (
-          <div style={{
-            display: "flex",
-            backgroundColor: "var(--bg-secondary)",
-            padding: "3px",
-            borderRadius: "6px",
-            marginBottom: "20px"
-          }}>
+        {/* Mode Selector Tabs */}
+        <div style={{
+          display: "flex",
+          backgroundColor: "var(--bg-secondary)",
+          padding: "3px",
+          borderRadius: "6px",
+          marginBottom: "20px"
+        }}>
+          {!bootstrapped ? (
             <button
               type="button"
-              onClick={() => { setMode("login"); setError(null); }}
               style={{
                 flex: 1,
                 padding: "8px",
                 border: "none",
                 borderRadius: "4px",
-                background: mode === "login" ? "var(--bg-card)" : "transparent",
-                color: mode === "login" ? "var(--text-primary)" : "var(--text-secondary)",
+                background: "rgba(14, 165, 233, 0.15)",
+                color: "var(--accent-cyan)",
                 fontSize: "13px",
-                fontWeight: mode === "login" ? 600 : 400,
-                cursor: "pointer"
+                fontWeight: 600,
+                cursor: "default"
               }}
             >
-              Sign In
+              First-Run Administrator Setup
             </button>
-            <button
-              type="button"
-              onClick={() => { setMode("register"); setError(null); }}
-              style={{
-                flex: 1,
-                padding: "8px",
-                border: "none",
-                borderRadius: "4px",
-                background: mode === "register" ? "var(--bg-card)" : "transparent",
-                color: mode === "register" ? "var(--text-primary)" : "var(--text-secondary)",
-                fontSize: "13px",
-                fontWeight: mode === "register" ? 600 : 400,
-                cursor: "pointer"
-              }}
-            >
-              Register
-            </button>
-          </div>
-        )}
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={() => { setMode("login"); setError(null); }}
+                style={{
+                  flex: 1,
+                  padding: "8px",
+                  border: "none",
+                  borderRadius: "4px",
+                  background: mode === "login" ? "var(--bg-card)" : "transparent",
+                  color: mode === "login" ? "var(--text-primary)" : "var(--text-secondary)",
+                  fontSize: "13px",
+                  fontWeight: mode === "login" ? 600 : 400,
+                  cursor: "pointer"
+                }}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMode("register"); setError(null); }}
+                style={{
+                  flex: 1,
+                  padding: "8px",
+                  border: "none",
+                  borderRadius: "4px",
+                  background: mode === "register" ? "var(--bg-card)" : "transparent",
+                  color: mode === "register" ? "var(--text-primary)" : "var(--text-secondary)",
+                  fontSize: "13px",
+                  fontWeight: mode === "register" ? 600 : 400,
+                  cursor: "pointer"
+                }}
+              >
+                Register
+              </button>
+            </>
+          )}
+        </div>
 
         {error && (
           <div style={{

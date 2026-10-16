@@ -51,8 +51,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    checkBootstrapStatus();
-    refreshUser();
+    const init = async () => {
+      try {
+        await Promise.all([checkBootstrapStatus(), refreshUser()]);
+      } catch {
+        // ignore
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
   }, []);
 
   const login = (newToken: string, newUser: User) => {
