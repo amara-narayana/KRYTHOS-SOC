@@ -83,29 +83,29 @@ export const LoginPage: React.FC = () => {
       <div style={{
         maxWidth: "420px",
         width: "100%",
-        backgroundColor: "var(--bg-card)",
+        backgroundColor: "#ffffff",
         border: "1px solid var(--border-color)",
         borderRadius: "12px",
         padding: "32px",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)"
+        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.04)"
       }}>
         {/* Logo and Brand */}
         <div style={{ textAlign: "center", marginBottom: "28px" }}>
           <div style={{
-            width: "48px",
-            height: "48px",
-            background: "linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%)",
-            borderRadius: "10px",
+            width: "52px",
+            height: "52px",
+            background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
+            borderRadius: "12px",
             display: "inline-flex",
             alignItems: "center",
             justifyContent: "center",
-            boxShadow: "0 0 20px rgba(14, 165, 233, 0.4)",
+            boxShadow: "0 4px 12px rgba(16, 185, 129, 0.35)",
             marginBottom: "12px"
           }}>
-            <Shield size={24} color="#ffffff" />
+            <Shield size={26} color="#ffffff" />
           </div>
-          <h1 style={{ fontSize: "20px", fontWeight: 700, color: "#ffffff", letterSpacing: "0.05em" }}>
-            KRYTHOS <span style={{ color: "var(--accent-cyan)" }}>SOC</span>
+          <h1 style={{ fontSize: "22px", fontWeight: 800, color: "#0f172a", letterSpacing: "0.02em" }}>
+            KRYTHOS <span style={{ color: "var(--accent-emerald)" }}>SOC</span>
           </h1>
           <p style={{ fontSize: "12px", color: "var(--text-muted)", marginTop: "4px" }}>
             Every Signal Connected. Every Threat Investigated.
@@ -115,15 +115,15 @@ export const LoginPage: React.FC = () => {
         {/* First-Run Setup Banner */}
         {!bootstrapped && mode === "bootstrap" && (
           <div style={{
-            backgroundColor: "rgba(14, 165, 233, 0.1)",
-            border: "1px solid var(--accent-cyan)",
+            backgroundColor: "#ecfdf5",
+            border: "1px solid #10b981",
             borderRadius: "6px",
             padding: "12px",
             marginBottom: "20px",
             fontSize: "12px",
-            color: "#e0f2fe"
+            color: "#065f46"
           }}>
-            <strong>First-Run Setup Required:</strong> Initialize the primary system Administrator account.
+            <strong>First-Run Setup:</strong> Initialize the primary system Administrator account.
           </div>
         )}
 

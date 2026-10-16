@@ -1,14 +1,19 @@
 import React from "react";
-import { Shield, Activity, LogOut, User as UserIcon } from "lucide-react";
+import { Shield, Sparkles, LogOut, CreditCard, Globe } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { NavItem } from "./Sidebar";
 
-export const Navbar: React.FC = () => {
+interface NavbarProps {
+  onNavigate?: (tab: NavItem) => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
   const { user, logout } = useAuth();
 
   return (
     <header style={{
-      height: "60px",
-      backgroundColor: "var(--bg-secondary)",
+      height: "64px",
+      backgroundColor: "#ffffff",
       borderBottom: "1px solid var(--border-color)",
       display: "flex",
       alignItems: "center",
@@ -16,24 +21,28 @@ export const Navbar: React.FC = () => {
       padding: "0 24px",
       position: "sticky",
       top: 0,
-      zIndex: 50
+      zIndex: 50,
+      boxShadow: "0 1px 3px rgba(0, 0, 0, 0.04)"
     }}>
       {/* Brand */}
-      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+      <div 
+        style={{ display: "flex", alignItems: "center", gap: "12px", cursor: onNavigate ? "pointer" : "default" }}
+        onClick={() => onNavigate && onNavigate("landing")}
+      >
         <div style={{
-          background: "linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%)",
+          background: "linear-gradient(135deg, #059669 0%, #10b981 100%)",
           padding: "8px",
           borderRadius: "8px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          boxShadow: "0 0 16px rgba(14, 165, 233, 0.3)"
+          boxShadow: "0 2px 8px rgba(16, 185, 129, 0.3)"
         }}>
-          <Shield size={20} color="#ffffff" />
+          <Shield size={22} color="#ffffff" />
         </div>
         <div>
-          <div style={{ fontWeight: 700, fontSize: "16px", letterSpacing: "0.05em", color: "#f8fafc" }}>
-            KRYTHOS <span style={{ color: "var(--accent-cyan)", fontWeight: 400 }}>SOC</span>
+          <div style={{ fontWeight: 800, fontSize: "17px", letterSpacing: "0.03em", color: "#0f172a" }}>
+            KRYTHOS <span style={{ color: "var(--accent-emerald)", fontWeight: 700 }}>SOC</span>
           </div>
           <div style={{ fontSize: "11px", color: "var(--text-muted)", letterSpacing: "0.02em" }}>
             Every Signal Connected. Every Threat Investigated.
@@ -41,26 +50,90 @@ export const Navbar: React.FC = () => {
         </div>
       </div>
 
+      {/* Center Links (Landing, Subscriptions) */}
+      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        {onNavigate && (
+          <>
+            <button
+              onClick={() => onNavigate("landing")}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "var(--text-secondary)",
+                fontSize: "13px",
+                fontWeight: 600,
+                padding: "6px 12px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                transition: "all 0.15s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
+                e.currentTarget.style.color = "var(--accent-emerald-dark)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "transparent";
+                e.currentTarget.style.color = "var(--text-secondary)";
+              }}
+            >
+              <Globe size={15} />
+              <span>Public Landing</span>
+            </button>
+
+            <button
+              onClick={() => onNavigate("pricing")}
+              style={{
+                background: "var(--bg-secondary)",
+                border: "1px solid rgba(16, 185, 129, 0.3)",
+                color: "var(--accent-emerald-dark)",
+                fontSize: "13px",
+                fontWeight: 600,
+                padding: "6px 14px",
+                borderRadius: "6px",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                transition: "all 0.15s ease"
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "rgba(16, 185, 129, 0.15)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--bg-secondary)";
+              }}
+            >
+              <CreditCard size={15} />
+              <span>Subscriptions</span>
+            </button>
+          </>
+        )}
+      </div>
+
       {/* Right User & Status */}
-      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
         {/* Live Status Pill */}
         <div style={{
           display: "flex",
           alignItems: "center",
           gap: "6px",
           fontSize: "12px",
-          color: "var(--success)",
-          backgroundColor: "rgba(16, 185, 129, 0.1)",
-          padding: "4px 10px",
+          fontWeight: 600,
+          color: "var(--accent-emerald-dark)",
+          backgroundColor: "var(--bg-secondary)",
+          padding: "5px 12px",
           borderRadius: "20px",
-          border: "1px solid rgba(16, 185, 129, 0.2)"
+          border: "1px solid rgba(16, 185, 129, 0.3)"
         }}>
           <span style={{
-            width: "6px",
-            height: "6px",
+            width: "7px",
+            height: "7px",
             borderRadius: "50%",
-            backgroundColor: "var(--success)",
-            boxShadow: "0 0 8px var(--success)"
+            backgroundColor: "var(--accent-emerald)",
+            boxShadow: "0 0 6px var(--accent-emerald)"
           }} />
           Local Engine Active
         </div>
@@ -69,8 +142,8 @@ export const Navbar: React.FC = () => {
         {user && (
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontSize: "13px", fontWeight: 600, color: "var(--text-primary)" }}>
-                {user.full_name}
+              <div style={{ fontSize: "13px", fontWeight: 700, color: "var(--text-primary)" }}>
+                {user.full_name || user.username}
               </div>
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "4px" }}>
                 <span className={`badge ${
@@ -86,7 +159,7 @@ export const Navbar: React.FC = () => {
               onClick={logout}
               title="Logout"
               style={{
-                background: "transparent",
+                background: "#ffffff",
                 border: "1px solid var(--border-color)",
                 borderRadius: "6px",
                 padding: "6px 10px",
@@ -96,15 +169,18 @@ export const Navbar: React.FC = () => {
                 alignItems: "center",
                 gap: "6px",
                 fontSize: "12px",
+                fontWeight: 500,
                 transition: "all 0.15s ease"
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.color = "#f87171";
+                e.currentTarget.style.color = "#dc2626";
                 e.currentTarget.style.borderColor = "#f87171";
+                e.currentTarget.style.backgroundColor = "#fee2e2";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.color = "var(--text-secondary)";
                 e.currentTarget.style.borderColor = "var(--border-color)";
+                e.currentTarget.style.backgroundColor = "#ffffff";
               }}
             >
               <LogOut size={14} />

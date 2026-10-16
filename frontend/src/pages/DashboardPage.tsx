@@ -91,12 +91,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
             </span>
             <Database size={18} color="var(--accent-cyan)" />
           </div>
-          <div style={{ fontSize: "28px", fontWeight: 700, margin: "12px 0 4px 0", color: "#ffffff" }}>
+          <div style={{ fontSize: "28px", fontWeight: 700, margin: "12px 0 4px 0", color: "var(--text-primary)" }}>
             {metrics?.events_count.toLocaleString() || 0}
           </div>
           <div style={{ fontSize: "11px", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "4px" }}>
             <span>Normalized in SQLite</span>
-            <ArrowUpRight size={12} color="var(--accent-cyan)" />
+            <ArrowUpRight size={12} color="var(--accent-emerald)" />
           </div>
         </div>
 
@@ -113,7 +113,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
           </div>
           <div style={{ fontSize: "11px", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "4px" }}>
             <span>{sev?.critical || 0} Critical, {sev?.high || 0} High</span>
-            <ArrowUpRight size={12} color="var(--accent-cyan)" />
+            <ArrowUpRight size={12} color="var(--accent-emerald)" />
           </div>
         </div>
 
@@ -125,12 +125,12 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
             </span>
             <Briefcase size={18} color="#eab308" />
           </div>
-          <div style={{ fontSize: "28px", fontWeight: 700, margin: "12px 0 4px 0", color: "#ffffff" }}>
+          <div style={{ fontSize: "28px", fontWeight: 700, margin: "12px 0 4px 0", color: "var(--text-primary)" }}>
             {metrics?.active_cases || 0}
           </div>
           <div style={{ fontSize: "11px", color: "var(--text-secondary)", display: "flex", alignItems: "center", gap: "4px" }}>
             <span>Total cases: {metrics?.cases_count || 0}</span>
-            <ArrowUpRight size={12} color="var(--accent-cyan)" />
+            <ArrowUpRight size={12} color="var(--accent-emerald)" />
           </div>
         </div>
 
@@ -142,7 +142,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
             </span>
             <HardDrive size={18} color="var(--text-secondary)" />
           </div>
-          <div style={{ fontSize: "28px", fontWeight: 700, margin: "12px 0 4px 0", color: "#ffffff" }}>
+          <div style={{ fontSize: "28px", fontWeight: 700, margin: "12px 0 4px 0", color: "var(--text-primary)" }}>
             {metrics?.storage_utilization?.database_size_mb || 0} <span style={{ fontSize: "14px", color: "var(--text-muted)" }}>MB</span>
           </div>
           <div style={{ fontSize: "11px", color: "var(--text-secondary)" }}>

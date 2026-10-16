@@ -1,9 +1,13 @@
 import React, { useState } from "react";
+import { Shield } from "lucide-react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { Navbar } from "./components/Navbar";
 import { Sidebar, NavItem } from "./components/Sidebar";
 
 // Pages
+import { LandingPage } from "./pages/LandingPage";
+import { PricingPage } from "./pages/PricingPage";
+import { PlaybooksPage } from "./pages/PlaybooksPage";
 import { LoginPage } from "./pages/LoginPage";
 import { DashboardPage } from "./pages/DashboardPage";
 import { EventsPage } from "./pages/EventsPage";
@@ -37,11 +41,11 @@ const MainLayout: React.FC = () => {
           width: "36px",
           height: "36px",
           border: "3px solid var(--border-color)",
-          borderTopColor: "var(--accent-cyan)",
+          borderTopColor: "var(--accent-emerald)",
           borderRadius: "50%",
           animation: "spin 0.8s linear infinite"
         }} />
-        <p style={{ marginTop: "16px", fontSize: "14px" }}>Initializing KRYTHOS Security Engine...</p>
+        <p style={{ marginTop: "16px", fontSize: "14px", fontWeight: 500 }}>Initializing KRYTHOS Security Engine...</p>
         <style>{`
           @keyframes spin {
             to { transform: rotate(360deg); }
@@ -51,12 +55,85 @@ const MainLayout: React.FC = () => {
     );
   }
 
+  // Public unauthenticated view for Landing and Pricing
   if (!isAuthenticated) {
+    if (currentTab === "landing") {
+      return (
+        <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-primary)" }}>
+          <header style={{
+            height: "64px",
+            backgroundColor: "#ffffff",
+            borderBottom: "1px solid var(--border-color)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 28px",
+            position: "sticky",
+            top: 0,
+            zIndex: 50
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }} onClick={() => setCurrentTab("landing")}>
+              <div style={{ background: "linear-gradient(135deg, #059669 0%, #10b981 100%)", padding: "8px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Shield size={20} color="#ffffff" />
+              </div>
+              <span style={{ fontWeight: 800, fontSize: "17px", color: "#0f172a" }}>KRYTHOS <span style={{ color: "var(--accent-emerald)" }}>SOC</span></span>
+            </div>
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <button onClick={() => setCurrentTab("pricing")} style={{ background: "transparent", border: "none", color: "var(--text-secondary)", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}>Subscriptions</button>
+              <button onClick={() => setCurrentTab("dashboard")} className="btn-primary" style={{ padding: "8px 18px", fontSize: "13px" }}>Sign In to Console</button>
+            </div>
+          </header>
+          <div style={{ padding: "32px 24px" }}>
+            <LandingPage onNavigate={setCurrentTab} />
+          </div>
+        </div>
+      );
+    }
+
+    if (currentTab === "pricing") {
+      return (
+        <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-primary)" }}>
+          <header style={{
+            height: "64px",
+            backgroundColor: "#ffffff",
+            borderBottom: "1px solid var(--border-color)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "0 28px",
+            position: "sticky",
+            top: 0,
+            zIndex: 50
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", cursor: "pointer" }} onClick={() => setCurrentTab("landing")}>
+              <div style={{ background: "linear-gradient(135deg, #059669 0%, #10b981 100%)", padding: "8px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Shield size={20} color="#ffffff" />
+              </div>
+              <span style={{ fontWeight: 800, fontSize: "17px", color: "#0f172a" }}>KRYTHOS <span style={{ color: "var(--accent-emerald)" }}>SOC</span></span>
+            </div>
+            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <button onClick={() => setCurrentTab("landing")} style={{ background: "transparent", border: "none", color: "var(--text-secondary)", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}>Overview</button>
+              <button onClick={() => setCurrentTab("dashboard")} className="btn-primary" style={{ padding: "8px 18px", fontSize: "13px" }}>Sign In to Console</button>
+            </div>
+          </header>
+          <div style={{ padding: "32px 24px" }}>
+            <PricingPage onNavigate={setCurrentTab} />
+          </div>
+        </div>
+      );
+    }
+
     return <LoginPage />;
   }
 
   const renderContent = () => {
     switch (currentTab) {
+      case "landing":
+        return <LandingPage onNavigate={setCurrentTab} />;
+      case "pricing":
+        return <PricingPage onNavigate={setCurrentTab} />;
+      case "playbooks":
+        return <PlaybooksPage />;
       case "dashboard":
         return <DashboardPage onNavigate={setCurrentTab} />;
       case "events":
@@ -88,7 +165,7 @@ const MainLayout: React.FC = () => {
 
   return (
     <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", backgroundColor: "var(--bg-primary)" }}>
-      <Navbar />
+      <Navbar onNavigate={setCurrentTab} />
       <div style={{ display: "flex", flex: 1 }}>
         <Sidebar currentTab={currentTab} onSelectTab={setCurrentTab} />
         <main style={{
