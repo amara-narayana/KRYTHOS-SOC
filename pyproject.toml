@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "krythos-soc"
+version = "0.1.0"
+description = "KRYTHOS Security Operations Platform - Local-first SIEM, security analytics, threat detection and incident response"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    { name = "KRYTHOS Security Team" }
+]
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.28.0",
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.2.0",
+    "email-validator>=2.0.0",
+    "sqlalchemy>=2.0.28",
+    "alembic>=1.13.1",
+    "typer>=0.9.0",
+    "rich>=13.7.1",
+    "argon2-cffi>=23.1.0",
+    "pyjwt>=2.8.0",
+    "python-multipart>=0.0.9",
+    "python-dateutil>=2.9.0"
+]
+
+[project.scripts]
+krythos = "cli.krythos_cli.main:app"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["backend*", "cli*"]
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+pythonpath = ["backend", "."]

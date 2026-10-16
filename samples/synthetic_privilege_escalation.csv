@@ -1,0 +1,4 @@
+timestamp,host,username,source_ip,event_category,action,outcome,severity,process_name
+2026-10-16T05:29:36.954163+00:00,db-cluster-01,operator,10.0.2.14,privilege_escalation,sudo_command,failure,high,/usr/bin/sudo
+2026-10-16T05:30:36.954163+00:00,db-cluster-01,operator,10.0.2.14,privilege_escalation,sudo_command,failure,high,/usr/bin/sudo
+2026-10-16T05:31:36.954163+00:00,db-cluster-01,root,10.0.2.14,system,stop_service,success,critical,systemctl

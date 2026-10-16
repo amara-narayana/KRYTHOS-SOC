@@ -1,0 +1,4 @@
+ioc_type,value,threat_type,confidence,provenance,description
+ip,198.51.100.99,c2_infrastructure,95,external_blocklist,Known malicious Command & Control node
+ip,198.51.100.42,credential_bruteforcer,90,synthetic_lab,Simulated aggressive scanner subnet
+domain,malicious-c2-krythos.org,phishing,85,threat_feed,Flagged phishing domain in campaign
