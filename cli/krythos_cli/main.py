@@ -572,5 +572,65 @@ def check_database_integrity():
     finally:
         db.close()
 
+# --- live collector ---
+@app.command("live")
+def live_collect_cmd(
+    file_path: Optional[str] = typer.Option(None, "--file", "-f", help="Explicit file path to tail (defaults to /var/log/auth.log or journalctl)")
+):
+    """Monitor real-time system events (auth, sudo, ssh) and stream them into KRYTHOS SOC."""
+    import time
+    from backend.app.services.ingestion.parsers import parse_linux_auth_line
+    from backend.app.services.event_service import ingest_events_batch
+    from backend.app.services.detection_service import evaluate_events_against_rules
+
+    db = get_db_session()
+    console.print(Panel.fit(
+        "[bold cyan]KRYTHOS Real-Time Live Security Collector[/bold cyan]\n"
+        "[dim]Monitoring actual system events (auth, sudo, ssh)...[/dim]\n"
+        "[yellow]Test it in another terminal by running: sudo whoami[/yellow]",
+        border_style="cyan"
+    ))
+
+    target_path = Path(file_path) if file_path else Path("/var/log/auth.log")
+
+    def tail_stream():
+        if target_path.exists() and os.access(target_path, os.R_OK):
+            console.print(f"[green][+] Tailing live log: {target_path}[/green]")
+            with open(target_path, "r", encoding="utf-8", errors="replace") as f:
+                f.seek(0, os.SEEK_END)
+                while True:
+                    line = f.readline()
+                    if not line:
+                        time.sleep(0.5)
+                        continue
+                    yield line.strip()
+        else:
+            console.print("[yellow][*] /var/log/auth.log not directly readable without sudo. Using journalctl stream...[/yellow]")
+            import subprocess
+            cmd = ["journalctl", "-f", "-n", "0", "-u", "ssh", "-u", "sshd", "-u", "sudo"]
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            for line in iter(proc.stdout.readline, ''):
+                if line:
+                    yield line.strip()
+
+    try:
+        for line in tail_stream():
+            if not line:
+                continue
+            parsed = parse_linux_auth_line(line)
+            if not parsed:
+                continue
+            cnt, evts = ingest_events_batch(db, [parsed], source_type="live_kali_auth")
+            if cnt > 0:
+                e = evts[0]
+                alerts = evaluate_events_against_rules(db, [e])
+                alert_badge = f" [bold red]-> [ALERT: {len(alerts)} fired][/bold red]" if alerts else ""
+                now_str = datetime.now().strftime("%H:%M:%S")
+                console.print(f"[dim]{now_str}[/dim] [bold white]{e.action}[/bold white] | User: [cyan]{e.username or 'unknown'}[/cyan] | Outcome: {'[green]success[/green]' if e.outcome == 'success' else '[red]failure[/red]'}{alert_badge}")
+    except KeyboardInterrupt:
+        console.print("\n[yellow][*] Live collector terminated.[/yellow]")
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     app()
