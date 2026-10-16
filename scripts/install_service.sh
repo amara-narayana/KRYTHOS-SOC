@@ -22,6 +22,11 @@ echo "  Deploying from: $PROJECT_DIR"
 echo "  Target User:    $CURRENT_USER"
 echo "=================================================================="
 
+# Ensure directories exist with proper write permissions
+mkdir -p "$PROJECT_DIR/data/logs" "$PROJECT_DIR/data/reports" "$PROJECT_DIR/data/backups"
+chmod -R 777 "$PROJECT_DIR/data" 2>/dev/null || true
+rm -f "$PROJECT_DIR/data/logs/krythos.log" 2>/dev/null || true
+
 # Check Python venv
 if [ ! -f "$PROJECT_DIR/.venv/bin/uvicorn" ]; then
   echo "[-] Virtual environment not found at $PROJECT_DIR/.venv"
@@ -59,6 +64,6 @@ if systemctl is-active --quiet krythos.service; then
   echo "=================================================================="
 else
   echo "[-] Service failed to start. Check logs:"
-  journalctl -u krythos -n 20 --no-pager
+  journalctl -u krythos -n 25 --no-pager
   exit 1
 fi
