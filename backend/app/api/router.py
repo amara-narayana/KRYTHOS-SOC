@@ -12,6 +12,7 @@ from backend.app.api.entities import router as entities_router
 from backend.app.api.intelligence import router as intelligence_router
 from backend.app.api.reports import router as reports_router
 from backend.app.api.settings import router as settings_router
+from backend.app.api.playbooks import router as playbooks_router
 
 api_v1_router = APIRouter(prefix="/api/v1")
 
@@ -28,3 +29,4 @@ api_v1_router.include_router(entities_router)
 api_v1_router.include_router(intelligence_router)
 api_v1_router.include_router(reports_router)
 api_v1_router.include_router(settings_router)
+api_v1_router.include_router(playbooks_router)

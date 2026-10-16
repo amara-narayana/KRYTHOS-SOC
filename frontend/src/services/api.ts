@@ -202,6 +202,42 @@ export const api = {
     }),
   getAttackMatrix: () => request<AttackTechnique[]>("/intelligence/attack-matrix"),
 
+  // Detection Rules
+  createRule: (payload: any) =>
+    request<DetectionRule>("/detections/rules", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    }),
+
+  // Live Telemetry Collector
+  getCollectorStatus: () => request<{
+    running: boolean;
+    source: string;
+    events_captured: number;
+    alerts_triggered: number;
+    last_event_at: string | null;
+    platform: string;
+  }>("/events/collector/status"),
+  restartCollector: () => request<any>("/events/collector/restart", { method: "POST" }),
+
+  // Playbooks & Incident Response (Live Actions)
+  blockIP: (ip: string, reason = "Analyst incident response") =>
+    request<any>("/playbooks/block-ip", {
+      method: "POST",
+      body: JSON.stringify({ ip, reason }),
+    }),
+  isolateHost: (host: string, reason = "Host containment policy") =>
+    request<any>("/playbooks/isolate-host", {
+      method: "POST",
+      body: JSON.stringify({ host, reason }),
+    }),
+  lockoutUser: (username: string, reason = "Compromised credential mitigation") =>
+    request<any>("/playbooks/lockout-user", {
+      method: "POST",
+      body: JSON.stringify({ username, reason }),
+    }),
+  sweepIOCs: () => request<any>("/playbooks/sweep-iocs", { method: "POST" }),
+
   // Reports & Settings
   getExecutiveReport: () => request<any>("/reports/summary"),
   getSettings: () => request<any>("/settings"),

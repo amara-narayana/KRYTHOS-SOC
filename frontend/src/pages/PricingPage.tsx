@@ -243,7 +243,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onNavigate }) => {
                   <Check size={16} color="#059669" /> Custom Rule Builder & Sigma transpiler
                 </li>
                 <li style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <Check size={16} color="#059669" /> Automated Response Playbook simulation
+                  <Check size={16} color="#059669" /> Live Incident Response Playbook Orchestration
                 </li>
                 <li style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                   <Check size={16} color="#059669" /> Multi-VM agent forwarder daemon
@@ -373,7 +373,7 @@ export const PricingPage: React.FC<PricingPageProps> = ({ onNavigate }) => {
               <tr>
                 <td><strong>Automated Playbooks</strong></td>
                 <td style={{ textAlign: "center", color: "#94a3b8" }}>Manual Only</td>
-                <td style={{ textAlign: "center" }}>Simulated Playbooks</td>
+                <td style={{ textAlign: "center" }}>Interactive Live Playbooks</td>
                 <td style={{ textAlign: "center" }}>Real Automated Isolation</td>
               </tr>
               <tr>

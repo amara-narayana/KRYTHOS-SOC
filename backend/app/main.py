@@ -12,6 +12,10 @@ from backend.app.api.router import api_v1_router
 from backend.app.core.logging_config import logger
 from backend.app.services.detection_service import initialize_default_rules
 
+import asyncio
+from backend.app.services.live_bus import live_bus
+from backend.app.services.live_watcher import live_watcher
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: initialize database tables and default rules
@@ -21,10 +25,17 @@ async def lifespan(app: FastAPI):
         rules_added = initialize_default_rules(db)
         if rules_added:
             logger.info(f"Seeded {rules_added} built-in detection rules.")
-    logger.info(f"{settings.APP_NAME} v{settings.APP_VERSION} initialized successfully.")
+    
+    # Bind event loop to LiveEventBus and start background live telemetry watcher
+    loop = asyncio.get_running_loop()
+    live_bus.set_loop(loop)
+    live_watcher.start()
+    
+    logger.info(f"{settings.APP_NAME} v{settings.APP_VERSION} initialized successfully with real-time live telemetry engine.")
     yield
     # Shutdown
-    logger.info(f"Shutting down {settings.APP_NAME}...")
+    logger.info(f"Shutting down {settings.APP_NAME} and stopping live collector...")
+    live_watcher.stop()
 
 app = FastAPI(
     title="KRYTHOS SOC",

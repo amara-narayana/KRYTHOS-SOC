@@ -181,7 +181,13 @@ def ingest(
     """Ingest a log file into KRYTHOS SOC."""
     path = Path(file_path)
     if not path.exists():
-        console.print(f"[bold red]File not found: {file_path}[/bold red]")
+        if "auth.log" in file_path:
+            console.print(f"[bold red]File not found: {file_path}[/bold red]")
+            console.print("[yellow][*] Note: On modern Kali Linux (Debian 12+), /var/log/auth.log is replaced by systemd-journald.[/yellow]")
+            console.print("[cyan][+] To monitor live events continuously, run:[/cyan] [bold white]krythos live[/bold white]")
+            console.print("[cyan][+] Or export recent journald events to ingest:[/cyan] [bold white]journalctl -u sudo -u ssh -n 200 > auth.log && krythos ingest auth.log[/bold white]")
+        else:
+            console.print(f"[bold red]File not found: {file_path}[/bold red]")
         sys.exit(1)
 
     db = get_db_session()

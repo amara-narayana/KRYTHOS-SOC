@@ -44,7 +44,7 @@ def tail_file(filepath):
 
 def stream_journalctl():
     """Fallback generator streaming systemd auth events via journalctl."""
-    cmd = ["journalctl", "-f", "-n", "0", "-u", "ssh", "-u", "sshd", "-u", "sudo"]
+    cmd = ["journalctl", "-f", "-n", "0", "-u", "ssh", "-u", "sshd", "-u", "sudo", "-u", "su", "-u", "systemd-logind"]
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     for line in iter(proc.stdout.readline, ''):
         if line:

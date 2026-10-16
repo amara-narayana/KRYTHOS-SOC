@@ -38,7 +38,7 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onNavigate }) => {
 
   useEffect(() => {
     loadMetrics();
-    const interval = setInterval(loadMetrics, 15000); // 15s live refresh
+    const interval = setInterval(loadMetrics, 6000); // 6s live refresh
     return () => clearInterval(interval);
   }, []);
 

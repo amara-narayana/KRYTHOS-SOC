@@ -6,10 +6,9 @@ from datetime import datetime, timezone
 from typing import Generator, Dict, Any, List, Optional
 from dateutil import parser as date_parser
 
-# Regex pattern for standard Linux SSH / sudo auth logs
-# Example: Oct 16 04:12:33 host sshd[12345]: Failed password for invalid user admin from 192.168.1.100 port 44212 ssh2
+# Regex pattern supporting both standard syslog ("Oct 16 04:12:33") and ISO timestamps ("2026-10-16T04:12:33+0000" / "2026-10-16 04:12:33")
 LINUX_AUTH_RE = re.compile(
-    r"^(?P<timestamp>[A-Z][a-z]{2}\s+\d+\s+\d{2}:\d{2}:\d{2})\s+(?P<host>[\w\.\-]+)\s+(?P<process>[\w\.\-]+)(?:\[(?P<pid>\d+)\])?:\s+(?P<message>.+)$"
+    r"^(?P<timestamp>(?:[A-Z][a-z]{2}\s+\d+\s+\d{2}:\d{2}:\d{2})|(?:\d{4}-\d{2}-\d{2}[T\s]\d{2}:\d{2}:\d{2}(?:[\+\-]\d{2}:?\d{2}|Z)?))\s+(?P<host>[\w\.\-]+)\s+(?P<process>[\w\.\-]+)(?:\[(?P<pid>\d+)\])?:\s*(?P<message>.+)$"
 )
 
 def parse_json(content: str) -> List[Dict[str, Any]]:
@@ -41,26 +40,48 @@ def parse_csv(content: str) -> List[Dict[str, Any]]:
     return [row for row in reader]
 
 def parse_linux_auth_line(line: str, default_year: Optional[int] = None) -> Optional[Dict[str, Any]]:
-    """Parse a single Linux syslog / auth.log line."""
+    """Parse a single Linux syslog, auth.log, or journalctl line."""
     line = line.strip()
     if not line:
         return None
 
     match = LINUX_AUTH_RE.match(line)
     if not match:
-        # Fallback raw line
+        # Fallback parsing for non-standard lines
+        now = datetime.now(timezone.utc)
+        outcome = "unknown"
+        action = "system_event"
+        category = "system"
+        if "sudo" in line.lower():
+            category = "privilege_escalation"
+            action = "sudo_command"
+            outcome = "failure" if "fail" in line.lower() else "success"
+        elif "ssh" in line.lower():
+            category = "authentication"
+            action = "ssh_login"
+            outcome = "failure" if "fail" in line.lower() else "success"
+
         return {
-            "raw_message": line,
-            "source_type": "linux_auth",
-            "action": "unknown",
-            "outcome": "unknown"
+            "timestamp": now,
+            "host": "localhost",
+            "process_name": "journald",
+            "username": "unknown",
+            "source_ip": None,
+            "action": action,
+            "outcome": outcome,
+            "event_category": category,
+            "raw_message": line
         }
 
     parts = match.groupdict()
-    year = default_year or datetime.now(timezone.utc).year
-    ts_str = f"{year} {parts['timestamp']}"
+    ts_str = parts["timestamp"]
     try:
-        ts = date_parser.parse(ts_str).replace(tzinfo=timezone.utc)
+        if ts_str[0].isalpha():
+            year = default_year or datetime.now(timezone.utc).year
+            ts_str = f"{year} {ts_str}"
+        ts = date_parser.parse(ts_str)
+        if ts.tzinfo is None:
+            ts = ts.replace(tzinfo=timezone.utc)
     except Exception:
         ts = datetime.now(timezone.utc)
 
@@ -75,15 +96,16 @@ def parse_linux_auth_line(line: str, default_year: Optional[int] = None) -> Opti
     action = "system_event"
     category = "authentication"
 
-    if "Failed password" in msg:
-        action = "ssh_login"
+    if "Failed password" in msg or "authentication failure" in msg:
+        action = "ssh_login" if "sshd" in proc else "auth_login"
         outcome = "failure"
-        user_match = re.search(r"for (?:invalid user )?(\w+)", msg)
-        ip_match = re.search(r"from ([\d\.\:a-fA-F]+)", msg)
+        user_match = re.search(r"for (?:invalid user )?(\w+)", msg) or re.search(r"user=(\w+)", msg)
+        ip_match = re.search(r"from ([\d\.\:a-fA-F]+)", msg) or re.search(r"rhost=([\d\.\:a-fA-F]+)", msg)
         if user_match:
             username = user_match.group(1)
         if ip_match:
             source_ip = ip_match.group(1)
+
     elif "Accepted password" in msg or "Accepted publickey" in msg:
         action = "ssh_login"
         outcome = "success"
@@ -93,14 +115,43 @@ def parse_linux_auth_line(line: str, default_year: Optional[int] = None) -> Opti
             username = user_match.group(1)
         if ip_match:
             source_ip = ip_match.group(1)
-    elif "sudo:" in proc or "sudo" in msg:
+
+    elif "Invalid user" in msg or "invalid user" in msg:
+        action = "ssh_login"
+        outcome = "failure"
+        user_match = re.search(r"invalid user (\w+)", msg, re.IGNORECASE)
+        ip_match = re.search(r"from ([\d\.\:a-fA-F]+)", msg)
+        if user_match:
+            username = user_match.group(1)
+        if ip_match:
+            source_ip = ip_match.group(1)
+
+    elif "sudo:" in proc or "sudo" in msg.lower() or proc == "sudo":
         action = "sudo_command"
         category = "privilege_escalation"
-        if "authentication failure" in msg:
+        if "authentication failure" in msg or "incorrect password" in msg:
             outcome = "failure"
         elif "COMMAND=" in msg:
             outcome = "success"
-        user_match = re.search(r"sudo:\s+(\w+)\s*:", line) or re.search(r"user=(\w+)", msg)
+        else:
+            outcome = "success"
+
+        user_match = re.search(r"sudo:\s+(\w+)\s*:", line) or re.search(r"(\w+)\s*:\s*TTY=", line) or re.search(r"user=(\w+)", msg)
+        if user_match:
+            username = user_match.group(1)
+
+    elif "su:" in proc or proc == "su":
+        action = "su_escalation"
+        category = "privilege_escalation"
+        outcome = "failure" if "FAILED SU" in msg or "authentication failure" in msg else "success"
+        user_match = re.search(r"by (\w+)", msg) or re.search(r"for (\w+)", msg)
+        if user_match:
+            username = user_match.group(1)
+
+    elif "session opened for user" in msg:
+        action = "session_opened"
+        outcome = "success"
+        user_match = re.search(r"session opened for user (\w+)", msg)
         if user_match:
             username = user_match.group(1)
 

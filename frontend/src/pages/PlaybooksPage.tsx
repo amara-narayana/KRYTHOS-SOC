@@ -12,7 +12,8 @@ import {
   Plus,
   Clock,
   Sparkles,
-  Search
+  Search,
+  Activity
 } from "lucide-react";
 import { api } from "../services/api";
 
@@ -32,120 +33,186 @@ export const PlaybooksPage: React.FC = () => {
   const [ruleAttackId, setRuleAttackId] = useState("T1110.001");
   const [ruleSavedMsg, setRuleSavedMsg] = useState<string | null>(null);
 
-  const runPlaybook = (name: string, steps: string[]) => {
+  const runPlaybook = async (id: string, name: string) => {
     setActivePlaybook(name);
     setExecuting(true);
-    setExecutionLog([`[*] Initializing ${name} against target: ${targetEntity}...`]);
+    const ts = new Date().toLocaleTimeString();
+    setExecutionLog([
+      `[${ts}] [*] Initializing real-time execution of '${name}'...`,
+      `[${ts}] [*] Target: ${targetEntity}`,
+      `[${ts}] [*] Security Policy: Live Production Enforcement`
+    ]);
 
-    steps.forEach((step, idx) => {
-      setTimeout(() => {
-        setExecutionLog((prev) => [...prev, `[+] Step ${idx + 1}/${steps.length}: ${step}`]);
-        if (idx === steps.length - 1) {
-          setExecutionLog((prev) => [
-            ...prev,
-            `[✓] Playbook '${name}' executed successfully. Audit record persisted.`,
-            `[*] Action simulated safely under air-gapped lab safety policy.`
-          ]);
-          setExecuting(false);
-        }
-      }, (idx + 1) * 700);
-    });
+    try {
+      let res: any;
+      if (id === "perimeter_block") {
+        setExecutionLog((prev) => [...prev, `[${new Date().toLocaleTimeString()}] [+] Applying boundary firewall block...`]);
+        res = await api.blockIP(targetEntity, "Manual analyst quarantine via Playbook");
+        setExecutionLog((prev) => [
+          ...prev,
+          `[${new Date().toLocaleTimeString()}] [+] Firewall Command: ${res.firewall_command || "N/A"}`,
+          `[${new Date().toLocaleTimeString()}] [+] OS Status: ${res.os_status}`,
+          res.stdout ? `[${new Date().toLocaleTimeString()}] [+] Output: ${res.stdout}` : "",
+          res.stderr ? `[${new Date().toLocaleTimeString()}] [!] Notice: ${res.stderr}` : "",
+          `[${new Date().toLocaleTimeString()}] [+] Threat Indicator Registered (IOC ID: #${res.ioc_id})`,
+          `[${new Date().toLocaleTimeString()}] [✓] Action completed. Tamper-evident Audit Log #${res.audit_id} committed.`
+        ].filter(Boolean));
+
+      } else if (id === "host_isolate") {
+        setExecutionLog((prev) => [...prev, `[${new Date().toLocaleTimeString()}] [+] Applying kernel network isolation policy...`]);
+        res = await api.isolateHost(targetEntity, "Manual host isolation via Playbook");
+        setExecutionLog((prev) => [
+          ...prev,
+          `[${new Date().toLocaleTimeString()}] [+] Isolation Rule: ${res.isolation_command || "N/A"}`,
+          `[${new Date().toLocaleTimeString()}] [+] OS Kernel Status: ${res.os_status}`,
+          `[${new Date().toLocaleTimeString()}] [✓] Host containment policy active. Audit Log #${res.audit_id} committed.`
+        ]);
+
+      } else if (id === "cred_lockdown") {
+        setExecutionLog((prev) => [...prev, `[${new Date().toLocaleTimeString()}] [+] Suspending user credentials and revoking active sessions...`]);
+        res = await api.lockoutUser(targetEntity, "Suspended via Incident Response Playbook");
+        setExecutionLog((prev) => [
+          ...prev,
+          `[${new Date().toLocaleTimeString()}] [+] KRYTHOS Database User Suspended: ${res.db_account_suspended ? "YES" : "User not in web DB"}`,
+          `[${new Date().toLocaleTimeString()}] [+] OS Status: ${res.os_account_status}`,
+          res.os_command ? `[${new Date().toLocaleTimeString()}] [+] OS Command: ${res.os_command}` : "",
+          `[${new Date().toLocaleTimeString()}] [✓] User revoked. Audit Log #${res.audit_id} committed.`
+        ].filter(Boolean));
+
+      } else if (id === "ioc_sweep") {
+        setExecutionLog((prev) => [...prev, `[${new Date().toLocaleTimeString()}] [+] Scanning security event database against active IOCs...`]);
+        res = await api.sweepIOCs();
+        setExecutionLog((prev) => [
+          ...prev,
+          `[${new Date().toLocaleTimeString()}] [+] Threat Indicators Evaluated: ${res.indicators_evaluated}`,
+          `[${new Date().toLocaleTimeString()}] [+] Correlated Matches Found: ${res.matching_events_count}`,
+          ...(res.matched_events.slice(0, 3).map((e: any) =>
+            `[${new Date().toLocaleTimeString()}]  --> Matched Event ${e.event_id}: IP ${e.source_ip || e.destination_ip} (${e.action})`
+          )),
+          `[${new Date().toLocaleTimeString()}] [✓] Historical sweep completed. Audit Log #${res.audit_id} committed.`
+        ]);
+      }
+    } catch (err: any) {
+      setExecutionLog((prev) => [
+        ...prev,
+        `[${new Date().toLocaleTimeString()}] [!] Execution Error: ${err.message || String(err)}`
+      ]);
+    } finally {
+      setExecuting(false);
+    }
   };
 
-  const handleSaveRule = (e: React.FormEvent) => {
+  const handleSaveRule = async (e: React.FormEvent) => {
     e.preventDefault();
-    setRuleSavedMsg(`Rule "${ruleName}" successfully compiled and registered into active engine.`);
-    setTimeout(() => {
-      setRuleSavedMsg(null);
-      setShowRuleModal(false);
-      setRuleName("");
-    }, 2000);
+    try {
+      const generatedRuleId = `KRY-CUST-${Date.now().toString().slice(-4)}`;
+      const payload = {
+        rule_id: generatedRuleId,
+        name: ruleName,
+        description: `Custom production rule monitoring ${ruleCategory} thresholds.`,
+        severity: ruleSeverity,
+        confidence: 90,
+        rule_type: "threshold",
+        mitre_attack_id: ruleAttackId,
+        mitre_tactic: "Custom Defense",
+        mitre_technique: ruleAttackId,
+        suppression_window_seconds: 300,
+        logic_definition: {
+          category: ruleCategory,
+          outcome: "failure",
+          threshold: parseInt(ruleThreshold),
+          window_seconds: parseInt(ruleWindow) * 60
+        }
+      };
+
+      await api.createRule(payload);
+      setRuleSavedMsg(`Rule '${ruleName}' (${generatedRuleId}) compiled and registered into live detection engine.`);
+      setTimeout(() => {
+        setRuleSavedMsg(null);
+        setShowRuleModal(false);
+        setRuleName("");
+      }, 2500);
+    } catch (err: any) {
+      alert(`Failed to save rule: ${err.message || String(err)}`);
+    }
   };
 
   const playbooks = [
     {
+      id: "perimeter_block",
+      title: "Boundary Firewall Blacklist",
+      desc: "Applies real-time boundary firewall drop rules (iptables / UFW / netsh) to block malicious IPs and registers indicators into Threat Intel store.",
+      category: "Perimeter",
+      icon: ShieldAlert,
+      color: "#059669",
+      targetHint: "Enter IP address (e.g. 198.51.100.42)",
+      steps: [
+        "Validate target IPv4 / IPv6 syntax and verify internal whitelists",
+        "Execute kernel iptables / UFW firewall drop rule",
+        "Register indicator into local Threat Intelligence IOC database",
+        "Log tamper-evident audit record to forensic trail"
+      ]
+    },
+    {
       id: "host_isolate",
       title: "Automated Host Isolation",
-      desc: "Simulate dropping all non-management traffic to isolate a compromised machine while keeping SSH forensic access.",
+      desc: "Executes real kernel network containment rules dropping all external traffic while retaining administrative Web UI (8000) and SSH (22).",
       category: "Containment",
       icon: Network,
       color: "#ef4444",
+      targetHint: "Enter host IP or hostname (e.g. 192.168.1.100)",
       steps: [
-        "Query active connections for target host in local event store",
-        "Generate iptables DROP rules for all external subnets",
-        "Retain administrative management port 8000 & 22",
-        "Notify active analyst on Incident Case timeline"
+        "Setup dedicated KRYTHOS_ISOLATE network filter chain",
+        "Permit loopback (lo) and administrative access on port 8000 & 22",
+        "Drop all unauthorized inbound and outbound packets",
+        "Record containment timestamp to forensic audit database"
       ]
     },
     {
       id: "cred_lockdown",
       title: "Compromised Account Lockdown",
-      desc: "Instantly revoke active JWT tokens, suspend account privileges, and trigger credential rotation flag.",
+      desc: "Instantly suspends user account privileges in KRYTHOS database, revokes active tokens, and executes OS user lockout.",
       category: "Identity",
       icon: Lock,
       color: "#f59e0b",
+      targetHint: "Enter target username (e.g. jsmith or admin)",
       steps: [
-        "Invalidate active user sessions in database",
-        "Mark user account status as suspended",
-        "Log high-severity security audit event to tamper-evident trail",
-        "Update associated incident case checklist to 'Credentials Revoked'"
-      ]
-    },
-    {
-      id: "perimeter_block",
-      title: "Boundary Firewall Blacklist",
-      desc: "Generate and export boundary firewall drop configurations (iptables / UFW / nftables) for malicious IPs.",
-      category: "Perimeter",
-      icon: ShieldAlert,
-      color: "#059669",
-      steps: [
-        "Verify IP against internal benign whitelist",
-        "Synthesize iptables -A INPUT -s <IP> -j DROP rules",
-        "Register indicator into local Threat Intelligence IOC store",
-        "Trigger retrospective 7-day query to identify other affected hosts"
+        "Set user is_active=False in KRYTHOS database",
+        "Invalidate active JWT sessions and authentication tokens",
+        "Execute Linux OS account lock (passwd -l / usermod -L)",
+        "Persist high-severity audit record for compliance verification"
       ]
     },
     {
       id: "ioc_sweep",
       title: "Retrospective IOC Sweep",
-      desc: "Execute a historical database sweep across all normalized telemetry for retroactive IOC discovery.",
+      desc: "Executes a live query across all ingested security events matching any active Threat Intelligence indicators.",
       category: "Forensics",
       icon: Search,
       color: "#0284c7",
+      targetHint: "Applies across all indicators in database",
       steps: [
-        "Query threat intelligence indicators active in past 30 days",
-        "Perform indexed scan across SecurityEvent source_ip and dest_ip",
-        "Correlate matching records into new incident evidence digest",
-        "Generate summary alert if previously unknown matches found"
+        "Retrieve all active threat indicators from local threat intel store",
+        "Scan indexed source_ip, destination_ip, and username fields",
+        "Correlate historical matches into incident evidence digest",
+        "Report identified matches with instant forensic drilldown"
       ]
     }
   ];
 
   return (
-    <div style={{ maxWidth: "1200px", margin: "0 auto", paddingBottom: "60px" }}>
-      {/* Page Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px" }}>
+    <div style={{ maxWidth: "1280px", margin: "0 auto", paddingBottom: "40px" }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "28px", flexWrap: "wrap", gap: "16px" }}>
         <div>
-          <div style={{
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "8px",
-            backgroundColor: "var(--bg-secondary)",
-            border: "1px solid rgba(16, 185, 129, 0.3)",
-            padding: "4px 12px",
-            borderRadius: "20px",
-            fontSize: "12px",
-            fontWeight: 700,
-            color: "var(--accent-emerald-dark)",
-            marginBottom: "8px"
-          }}>
-            <Zap size={14} /> Security Orchestration & Playbooks
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+            <Zap size={24} color="#059669" />
+            <h1 style={{ fontSize: "24px", fontWeight: 700, color: "#0f172a" }}>
+              Incident Response Playbooks & Rules
+            </h1>
           </div>
-          <h1 style={{ fontSize: "28px", fontWeight: 800, color: "#0f172a" }}>
-            Automated Response Playbooks & Rule Studio
-          </h1>
-          <p style={{ color: "#64748b", fontSize: "14px", marginTop: "4px" }}>
-            Execute safe incident containment playbooks, generate firewall rules, and author custom detection rules.
+          <p style={{ color: "#64748b", fontSize: "14px" }}>
+            Production-grade incident orchestration. Zero simulation — executes real OS firewall, account lockout, and IOC sweep actions.
           </p>
         </div>
 
@@ -163,19 +230,19 @@ export const PlaybooksPage: React.FC = () => {
         <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: "260px" }}>
             <label style={{ fontSize: "12px", fontWeight: 600, color: "#475569", display: "block", marginBottom: "4px" }}>
-              Target IP Address or Hostname for Playbook Execution:
+              Target IP Address / Host / Username for Playbook Execution:
             </label>
             <input
               type="text"
               className="input-field"
               value={targetEntity}
               onChange={(e) => setTargetEntity(e.target.value)}
-              placeholder="e.g. 192.168.1.100 or workstation-finance"
+              placeholder="e.g. 192.168.1.100, kali, or bad_actor_ip"
             />
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#64748b", marginTop: "16px" }}>
-            <Clock size={16} color="#059669" />
-            <span>Safety Mode: Non-destructive sandbox simulation active</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12px", color: "#059669", marginTop: "16px", fontWeight: 600 }}>
+            <Activity size={16} color="#059669" className="animate-pulse" />
+            <span>Operational Mode: LIVE PRODUCTION (Real System Enforcement)</span>
           </div>
         </div>
       </div>
@@ -228,7 +295,7 @@ export const PlaybooksPage: React.FC = () => {
                 </p>
 
                 <div style={{ fontSize: "11px", fontWeight: 600, color: "#475569", marginBottom: "8px" }}>
-                  Workflow Steps:
+                  Orchestration Steps:
                 </div>
                 <ul style={{ fontSize: "12px", color: "#64748b", paddingLeft: "16px", margin: "0 0 20px 0", lineHeight: 1.6 }}>
                   {pb.steps.map((s, idx) => (
@@ -238,13 +305,13 @@ export const PlaybooksPage: React.FC = () => {
               </div>
 
               <button
-                onClick={() => runPlaybook(pb.title, pb.steps)}
+                onClick={() => runPlaybook(pb.id, pb.title)}
                 disabled={executing}
                 className="btn-primary"
                 style={{ width: "100%", justifyContent: "center" }}
               >
                 <Play size={14} />
-                <span>Simulate Playbook</span>
+                <span>Execute Playbook</span>
               </button>
             </div>
           );
@@ -266,19 +333,19 @@ export const PlaybooksPage: React.FC = () => {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #1e293b", paddingBottom: "10px", marginBottom: "12px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <Terminal size={16} color="#34d399" />
-              <span style={{ fontWeight: 600, color: "#ffffff" }}>Playbook Execution Console — {activePlaybook}</span>
+              <span style={{ fontWeight: 600, color: "#ffffff" }}>Playbook Live Execution Console — {activePlaybook}</span>
             </div>
             {executing && (
               <span style={{ fontSize: "11px", color: "#38bdf8", display: "flex", alignItems: "center", gap: "6px" }}>
                 <span style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#38bdf8", animation: "ping 1s infinite" }} />
-                Executing...
+                Executing in real time...
               </span>
             )}
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "6px", lineHeight: 1.6 }}>
             {executionLog.map((log, idx) => (
               <div key={idx} style={{
-                color: log.startsWith("[✓]") ? "#34d399" : log.startsWith("[*]") ? "#38bdf8" : "#cbd5e1"
+                color: log.includes("[✓]") ? "#34d399" : log.includes("[*]") ? "#38bdf8" : log.includes("[!]") ? "#f87171" : "#cbd5e1"
               }}>
                 {log}
               </div>
@@ -316,7 +383,7 @@ export const PlaybooksPage: React.FC = () => {
               Create Custom Detection Rule
             </h3>
             <p style={{ color: "#64748b", fontSize: "13px", marginBottom: "20px" }}>
-              Add a deterministic sliding-window or sequence rule to the live detection engine.
+              Add a deterministic sliding-window rule directly to the live detection engine.
             </p>
 
             {ruleSavedMsg ? (

@@ -10,17 +10,18 @@ KRYTHOS SOC is a modular, local-first Security Operations Center and SIEM platfo
 
 ## Key Features
 
-- **Local-First & Offline:** 100% private. No telemetry, logs, or indicators leave your machine. No cloud dependencies or paid APIs required.
-- **Unified Domain Services:** Web GUI and CLI share the exact same database models, detection engine, and business logic.
-- **Multi-Format Ingestion:** Ingest JSON, JSONL, CSV, Linux syslog (`auth.log` parsing `sshd` and `sudo`), and synthetic telemetry.
-- **Deterministic Detection Engine:** Sliding window thresholds, sequence correlations (e.g. brute force followed by successful logon), and IOC matchers with alert suppression windows.
-- **MITRE ATT&CK Matrix:** Interactive visual matrix mapped to enterprise tactics and techniques (T1110, T1078, T1548, T1071, T1562).
-- **Incident Response Workbench:** Complete case management, task checklists, analyst notes timeline, attached evidence locker, and tamper-evident standalone HTML incident reports.
-- **Local Threat Intelligence (IOCs):** Manage, match, import, and export indicators (IPs, domains, hashes, URLs) in CSV format.
-- **Entity Analytics & Explainable Risk:** Computes 0–100 risk scores with score factor breakdowns for users, hosts, and IP addresses.
-- **Command-Line Interface (`krythos`):** Comprehensive CLI tool for offline triage, batch ingestion, rule validation, detection runs, and database snapshots.
-- **Role-Based Access Control (RBAC):** `Administrator`, `Analyst`, and `Viewer` roles with memory-hard Argon2id password hashing and session tokens.
-- **Optional Local AI Assistance:** Pluggable connector to offline Ollama models with a deterministic rules-based fallback.
+- **Real-Time Live Telemetry Engine:** Zero simulations or fake data. Automatically captures live operating system events (systemd-journald, auth.log, sudo executions, SSH attempts, and logins) directly from the Linux kernel in real-time.
+- **Server-Sent Events (SSE) Live Push:** Connected web clients receive live incoming security events and triggered detection alerts with sub-millisecond push latency.
+- **Live Playbook Incident Orchestration:** Real-world defensive containment actions:
+  - **Boundary Firewall Drops:** Executes actual `iptables` / `UFW` / `netsh` kernel drop rules against malicious source IPs and registers indicators into the Threat Intel IOC store.
+  - **Host Network Containment:** Enforces strict isolation chains allowing only administrative SOC UI (port 8000) and SSH forensics (port 22).
+  - **Compromised Account Lockout:** Revokes active sessions, suspends web users, and executes OS-level account locks (`passwd -l`).
+  - **Retrospective IOC Sweeps:** Scans historical database events against threat indicators and extracts correlated incident evidence.
+- **Production Systemd Daemon:** Runs as an auto-starting system service (`krythos.service`) with automated restarts, log rotation, and low memory footprint (<80MB RAM).
+- **Zero-Node / Zero-npm Deployment:** Frontend is pre-compiled into `frontend/dist`. You can clone and run on Kali Linux or Debian with just Python!
+- **Local-First & 100% Offline:** Zero cloud egress. No external API dependencies or fees. SQLite WAL mode provides high-throughput concurrent reads and writes.
+- **Deterministic Detection Engine:** Sliding window thresholds, sequence correlations, and MITRE ATT&CK mapped rules.
+- **Incident Response Workbench:** Full case management, investigation checklists, analyst timeline, and tamper-evident HTML incident reports.
 
 ---
 
@@ -85,7 +86,23 @@ cd ..
 
 ### Step 3: Start KRYTHOS SOC
 
-#### On Linux / Kali Linux:
+#### Option 1: Run as a Production System Daemon (Recommended for Kali Linux / Debian)
+To run KRYTHOS continuously in the background on system boot:
+```bash
+sudo bash scripts/install_service.sh
+```
+*Manage the daemon with standard systemctl:*
+```bash
+sudo systemctl status krythos     # Check service health
+sudo systemctl restart krythos    # Restart service
+sudo journalctl -u krythos -f     # Live streaming logs
+```
+
+#### Option 2: Run in Foreground Terminal
+```bash
+sudo ./scripts/start_production.sh
+```
+*Or standard background start:*
 ```bash
 ./scripts/start.sh
 ```

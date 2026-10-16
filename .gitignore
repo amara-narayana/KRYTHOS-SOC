@@ -32,6 +32,7 @@ data/krythos.db
 data/logs/
 data/reports/
 data/backups/
+data/*.pipe
 logs/
 reports/
 backups/
