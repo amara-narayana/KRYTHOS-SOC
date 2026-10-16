@@ -176,7 +176,7 @@ def list_users(as_json: bool = typer.Option(False, "--json")):
 @app.command()
 def ingest(
     file_path: str = typer.Argument(..., help="Path to log file (JSON, JSONL, CSV, or Linux auth.log)"),
-    source_type: Optional[str] = typer.Option(None, "--source", help="Optional source type override")
+    source_type: Optional[str] = typer.Option(None, "--source", "--source-type", "-s", help="Optional source type override")
 ):
     """Ingest a log file into KRYTHOS SOC."""
     path = Path(file_path)
