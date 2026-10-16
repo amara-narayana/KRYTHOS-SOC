@@ -1,6 +1,6 @@
 @layer base {
   :root {
-    /* Green and White Theme Tokens */
+    /* Green and White (Light) Theme Tokens */
     --bg-primary: #f8fafc;
     --bg-secondary: #f0fdf4;
     --bg-card: #ffffff;
@@ -34,6 +34,114 @@
     --success: #10b981;
     --error: #ef4444;
     --warning: #f59e0b;
+  }
+
+  [data-theme="dark"] {
+    /* Cyber Obsidian & Emerald (Dark) Theme Tokens */
+    --bg-primary: #090d16;
+    --bg-secondary: #0f172a;
+    --bg-card: #0f172a;
+    --bg-hover: #1e293b;
+    --border-color: #1e293b;
+    --border-highlight: #334155;
+
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+
+    --accent-emerald: #10b981;
+    --accent-emerald-dark: #059669;
+    --accent-emerald-light: #34d399;
+    --accent-emerald-subtle: #064e3b;
+    --accent-emerald-glow: rgba(16, 185, 129, 0.4);
+
+    --accent-cyan: #10b981;
+    --accent-cyan-hover: #34d399;
+    --accent-cyan-glow: rgba(16, 185, 129, 0.4);
+
+    --sev-critical: #f87171;
+    --sev-high: #fb923c;
+    --sev-medium: #facc15;
+    --sev-low: #34d399;
+    --sev-info: #38bdf8;
+
+    --success: #34d399;
+    --error: #f87171;
+    --warning: #fbbf24;
+  }
+}
+
+/* Dark mode specific element adjustments */
+[data-theme="dark"] .card {
+  background-color: #0f172a;
+  border-color: #1e293b;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+[data-theme="dark"] .card:hover {
+  border-color: rgba(16, 185, 129, 0.4);
+}
+
+[data-theme="dark"] .metric-card {
+  background-color: #0f172a;
+  border-color: #1e293b;
+}
+
+[data-theme="dark"] .btn-secondary {
+  background: #1e293b;
+  color: #f8fafc;
+  border-color: #334155;
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+  background: #334155;
+  border-color: #475569;
+  color: #ffffff;
+}
+
+[data-theme="dark"] .input-field {
+  background-color: #1e293b;
+  border-color: #334155;
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .table-container {
+  background-color: #0f172a;
+  border-color: #1e293b;
+}
+
+[data-theme="dark"] .soc-table th {
+  background-color: #131c2e;
+  border-bottom-color: #1e293b;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .soc-table td {
+  border-bottom-color: #1e293b;
+  color: #f8fafc;
+}
+
+[data-theme="dark"] .soc-table tr:hover td {
+  background-color: rgba(16, 185, 129, 0.08);
+}
+
+@keyframes radarSweep {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes cyberPulse {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
   }
 }
 

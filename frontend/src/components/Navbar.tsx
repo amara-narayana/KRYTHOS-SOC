@@ -1,6 +1,7 @@
 import React from "react";
-import { Shield, Sparkles, LogOut, CreditCard, Globe } from "lucide-react";
+import { Shield, Sparkles, LogOut, CreditCard, Globe, Sun, Moon } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import { NavItem } from "./Sidebar";
 
 interface NavbarProps {
@@ -9,6 +10,7 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   return (
     <header style={{
@@ -114,7 +116,30 @@ export const Navbar: React.FC<NavbarProps> = ({ onNavigate }) => {
       </div>
 
       {/* Right User & Status */}
-      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        {/* Dark/Light Mode Switcher */}
+        <button
+          onClick={toggleTheme}
+          title={theme === "dark" ? "Switch to Light Mode" : "Switch to Cyber Dark Mode"}
+          style={{
+            background: "var(--bg-card)",
+            border: "1px solid var(--border-color)",
+            borderRadius: "6px",
+            padding: "5px 10px",
+            color: "var(--accent-emerald)",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+            fontSize: "12px",
+            fontWeight: 600,
+            transition: "all 0.15s ease"
+          }}
+        >
+          {theme === "dark" ? <Sun size={14} color="#34d399" /> : <Moon size={14} color="#059669" />}
+          <span>{theme === "dark" ? "Light" : "Dark"}</span>
+        </button>
+
         {/* Live Status Pill */}
         <div style={{
           display: "flex",

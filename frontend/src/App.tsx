@@ -1,6 +1,7 @@
 import React, { useState } from "react";
-import { Shield } from "lucide-react";
+import { Shield, Sun, Moon } from "lucide-react";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import { ThemeProvider, useTheme } from "./context/ThemeContext";
 import { Navbar } from "./components/Navbar";
 import { Sidebar, NavItem } from "./components/Sidebar";
 
@@ -24,6 +25,7 @@ import { HelpPage } from "./pages/HelpPage";
 
 const MainLayout: React.FC = () => {
   const { user, isAuthenticated, loading } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [currentTab, setCurrentTab] = useState<NavItem>("dashboard");
 
   if (loading) {
@@ -62,7 +64,7 @@ const MainLayout: React.FC = () => {
         <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-primary)" }}>
           <header style={{
             height: "64px",
-            backgroundColor: "#ffffff",
+            backgroundColor: "var(--bg-card)",
             borderBottom: "1px solid var(--border-color)",
             display: "flex",
             alignItems: "center",
@@ -76,9 +78,29 @@ const MainLayout: React.FC = () => {
               <div style={{ background: "linear-gradient(135deg, #059669 0%, #10b981 100%)", padding: "8px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Shield size={20} color="#ffffff" />
               </div>
-              <span style={{ fontWeight: 800, fontSize: "17px", color: "#0f172a" }}>KRYTHOS <span style={{ color: "var(--accent-emerald)" }}>SOC</span></span>
+              <span style={{ fontWeight: 800, fontSize: "17px", color: "var(--text-primary)" }}>KRYTHOS <span style={{ color: "var(--accent-emerald)" }}>SOC</span></span>
             </div>
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <button
+                onClick={toggleTheme}
+                title="Toggle Theme"
+                style={{
+                  background: "var(--bg-hover)",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "6px",
+                  padding: "6px 12px",
+                  color: "var(--accent-emerald)",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontSize: "13px",
+                  fontWeight: 600
+                }}
+              >
+                {theme === "dark" ? <Sun size={15} color="#34d399" /> : <Moon size={15} color="#059669" />}
+                <span>{theme === "dark" ? "Light" : "Dark"}</span>
+              </button>
               <button onClick={() => setCurrentTab("pricing")} style={{ background: "transparent", border: "none", color: "var(--text-secondary)", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}>Subscriptions</button>
               <button onClick={() => setCurrentTab("dashboard")} className="btn-primary" style={{ padding: "8px 18px", fontSize: "13px" }}>Sign In to Console</button>
             </div>
@@ -95,7 +117,7 @@ const MainLayout: React.FC = () => {
         <div style={{ minHeight: "100vh", backgroundColor: "var(--bg-primary)" }}>
           <header style={{
             height: "64px",
-            backgroundColor: "#ffffff",
+            backgroundColor: "var(--bg-card)",
             borderBottom: "1px solid var(--border-color)",
             display: "flex",
             alignItems: "center",
@@ -109,9 +131,29 @@ const MainLayout: React.FC = () => {
               <div style={{ background: "linear-gradient(135deg, #059669 0%, #10b981 100%)", padding: "8px", borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Shield size={20} color="#ffffff" />
               </div>
-              <span style={{ fontWeight: 800, fontSize: "17px", color: "#0f172a" }}>KRYTHOS <span style={{ color: "var(--accent-emerald)" }}>SOC</span></span>
+              <span style={{ fontWeight: 800, fontSize: "17px", color: "var(--text-primary)" }}>KRYTHOS <span style={{ color: "var(--accent-emerald)" }}>SOC</span></span>
             </div>
             <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+              <button
+                onClick={toggleTheme}
+                title="Toggle Theme"
+                style={{
+                  background: "var(--bg-hover)",
+                  border: "1px solid var(--border-color)",
+                  borderRadius: "6px",
+                  padding: "6px 12px",
+                  color: "var(--accent-emerald)",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  fontSize: "13px",
+                  fontWeight: 600
+                }}
+              >
+                {theme === "dark" ? <Sun size={15} color="#34d399" /> : <Moon size={15} color="#059669" />}
+                <span>{theme === "dark" ? "Light" : "Dark"}</span>
+              </button>
               <button onClick={() => setCurrentTab("landing")} style={{ background: "transparent", border: "none", color: "var(--text-secondary)", fontSize: "14px", fontWeight: 600, cursor: "pointer" }}>Overview</button>
               <button onClick={() => setCurrentTab("dashboard")} className="btn-primary" style={{ padding: "8px 18px", fontSize: "13px" }}>Sign In to Console</button>
             </div>
@@ -186,9 +228,11 @@ const MainLayout: React.FC = () => {
 
 export const App: React.FC = () => {
   return (
-    <AuthProvider>
-      <MainLayout />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <MainLayout />
+      </AuthProvider>
+    </ThemeProvider>
   );
 };
 
